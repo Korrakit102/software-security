@@ -77,6 +77,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
+          scan-ref: project/starter-app
           scanners: vuln,secret
           format: sarif
           output: trivy-fs.sarif
@@ -95,6 +96,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: config
+          scan-ref: project/starter-app
           format: sarif
           output: trivy-config.sarif
           severity: HIGH,CRITICAL
@@ -112,6 +114,7 @@ jobs:
         uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
+          scan-ref: project/starter-app
           scanners: vuln,secret
           severity: HIGH,CRITICAL
           ignore-unfixed: false
@@ -120,6 +123,7 @@ jobs:
       - name: Gate — fail on HIGH/CRITICAL (IaC)
         uses: aquasecurity/trivy-action@v0.36.0
         with:
+          scan-ref: project/starter-app
           scan-type: config
           severity: HIGH,CRITICAL
           exit-code: "1"
