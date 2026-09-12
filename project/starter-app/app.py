@@ -163,7 +163,7 @@ def api_note(nid):
     if not current_user():
         return jsonify(error="auth required"), 401
     con = db()
-    r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ?", (nid,)).fetchone()
+    r = con.execute("SELECT id,owner,title,body FROM notes WHERE id = ? AND owner = ?", (nid,current_user())).fetchone()
     con.close()
     return (jsonify(dict(r)) if r else (jsonify(error="not found"), 404))
 
@@ -173,14 +173,27 @@ def search():
     user = current_user()
     if not user:
         return "auth required", 401
-    term = request.args.get("q", "")
-    con = db()
-    q = "SELECT id,title,body FROM notes WHERE owner='%s' AND body LIKE '%%%s%%'" % (user, term)
-    rows = con.execute(q).fetchall()
-    con.close()
-    return render_template_string("<a href=/>back</a><ul>" +
-        "".join("<li>%s: %s</li>" % (r["title"], r["body"]) for r in rows) + "</ul>")
 
+    term = request.args.get("q", "")
+
+    con = db()
+    rows = con.execute(
+        "SELECT id,title,body FROM notes WHERE owner = ? AND body LIKE ?",
+        (user, f"%{term}%")
+    ).fetchall()
+    con.close()
+
+    return render_template_string(
+        """
+        <a href="/">back</a>
+        <ul>
+        {% for r in rows %}
+            <li>{{ r["title"] }}: {{ r["body"] }}</li>
+        {% endfor %}
+        </ul>
+        """,
+        rows=rows
+    )
 
 @app.route("/admin")
 def admin():
